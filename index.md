@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<title>AWS Serverless Selenium</title>
+	<meta name="author" content="Evgeni Kostadinov">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<link rel="stylesheet" href="css/reveal.css">
+	<link rel="stylesheet" href="css/theme/moon.css" id="theme">
+	<!-- Theme used for syntax highlighting of code -->
+	<link rel="stylesheet" href="lib/css/zenburn.css">
+
+	<!-- Printing and PDF exports -->
+	<script>
+		var link = document.createElement('link');
+		link.rel = 'stylesheet';
+		link.type = 'text/css';
+		link.href = window.location.search.match(/print-pdf/gi) ? 'css/print/pdf.css' : 'css/print/paper.css';
+		document.getElementsByTagName('head')[0].appendChild(link);
+	</script>
+
+	<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+</head>
+
+<body>
+	<div class="reveal">
+		<!-- Any section element inside of this container is displayed as a slide -->
+		<div class="slides">
+			<section>
+				<div>
+					<h1>AWS Serverless</h1>
+					<h3>Selenium Tests</h3>
+					<img width="400" height="250" data-src="images/1010.jpg" alt="cloud-pattern">
+				</div>
+			</section>
+
+			<section>
+				<h2>Who am I?</h2>
+				<ul>
+					<li>Perpetual beta learner</li>
+					<li> QA Manager with groundwork experience</li>
+					<li> Test architect who enjoys the craft</li>
+				</ul>
+				<img width="350" height="200" data-src="images/ekostadinov.jpg" alt="my-pic-here">
+			</section>
+
+			<section class="stack present" data-previous-indexv="0">
+				<section id="fragments" class="present">
+					<h2>Table of contents</h2>
+					<ol>
+						<li>
+							<p data-fragment-index="4">Migration Away From Traditional Infrastructure
+							</p>
+						</li>
+						<li>
+							<p class="fragment" data-fragment-index="1">Serverless Architecture and Framework
+							</p>
+						</li>
+						<li>
+							<p class="fragment " data-fragment-index="2">Selenium Tests Solution</p>
+						</li>
+						<li>
+							<p class="fragment  " data-fragment-index="3">Managing Your SLS Solution</p>
+						</li>
+						<li>
+							<p class="fragment " data-fragment-index="5">Q&amp;A</p>
+						</li>
+					</ol>
+				</section>
+			</section>
+
+
+			<section>
+				<section id="fragments">
+					<h2>This talk is <b style="color:red;">NOT</b> about:</h2>
+					<p class="fragment">selling AWS</p>
+					<p class="fragment">or Serverless framework, for that matter</p>
+					<p class="fragment"> "new" futuristic ideas</p>
+					<p class="fragment"> solving ALL specific problems</p>
+				</section>
+			</section>
+
+			<section>
+				<section>
+					<h2>Traditional Infrastructure And Setup</h2>
+					<img width="550" height="300" data-src="images/jenkins-se.jpg" alt="shift-left">
+				</section>
+				<section>
+					<h2>We have <b style="color:red;">built over</b> the years:</h2>
+					<p class="fragment">Jenkins farm</p>
+					<p class="fragment">on AWS EC2 intances</p>
+					<p class="fragment">Complex pipelines for Web, Performance tests</p>
+					<p class="fragment"> and Monitoring of Staging and Production environments</p>
+					<p class="fragment"> Configuration management and Infrastructure as Code solutions</p>
+				</section>
+				<section>
+					<h2>WE wanted to <b style="color:red;">move away</b> from:</h2>
+					<p class="fragment"><b style="color:red;">Overhead</b> of System administration to maintain the EC2 instances</p>
+					<p class="fragment">Everything required <b style="color:red;">Operations</b> framework and knowledge</p>
+					<p class="fragment"><b style="color:red;">Additional time</b>  on every update that had to be made</p>
+					<p class="fragment">... like browser and driver pairs</p>
+					<p class="fragment">Strong <b style="color:red;">vendor lock-in</b>, we were completely dependent on a third-party provider.
+					</p>
+				</section>
+				<section>
+					<h2><b style="color:red;">Strangler</b> Application Pattern</h2>
+					<p class="fragment"><b style="color:red;">Context:</b> As systems age, the development tools, hosting technology, and even system architectures they were built on can become increasingly obsolete.</p>
+					<p class="fragment"><b style="color:red;">Problem:</b> How to deal with legacy code during the Container revolution?</p>
+					<p class="fragment"><b style="color:red;">Solution:</b> Modernize an application by incrementally developing a new (strangler) application around the legacy application.</p>
+					<p class="fragment">Like every solution, one should know <b style="color:red;">when and how much</b> to apply it!</p>
+					</p>
+				</section>
+				<section>
+					<h2><b style="color:red;">Transform</b> and Eliminate Pattern</h2>
+					<img width="550" height="250" data-src="images/strangler.png" alt="shift-left">
+					<img width="550" height="250" data-src="images/transform.png" alt="shift-left">
+					</p>
+				</section>
+			</section>
+
+
+			<section>
+				<section>
+					<h2>Serverless Architecture</h2>
+					<img width="550" height="300" data-src="images/soapbubbles.jpg" alt="shift-left">
+				</section>
+				<section>
+					<blockquote cite="https://martinfowler.com/articles/serverless.html">
+						&ldquo;Serverless architectures are application designs that incorporate <b
+							style="color:red;">third-party “Backend</b> as a Service” (BaaS) services, and/or that
+						include custom code run in managed, <b style="color:red;">ephemeral containers</b> on a “<b
+							style="color:red;">Functions</b> as a Service” (FaaS) platform.&rdquo;
+					</blockquote>
+					~ Martin Fowler
+				</section>
+				<section>
+					<blockquote cite="https://en.wikipedia.org/wiki/Serverless_computing">
+						&ldquo;The first "pay as you go" code execution platform was Zimki, released in <b style="color:red;">2006</b>, but it was not commercially successful.&rdquo;
+					</blockquote>
+					~ Wikipedia
+				</section>
+				<section>
+					<h2>Is this just a hype?</h2>
+					<p>Companies move towards such solutions mainly because:</p>
+					<p class="fragment"> Systems built this way are often <b style="color:red;">more flexible</b> and
+						amenable to change</p>
+					<p class="fragment"> Better <b style="color:red;">separation of concerns</b>, each component plays a
+						more architecturally aware role</p>
+					<p class="fragment"> And let's not forget that fascinating <b style="color:red;">cost benefits</b>!
+					</p>
+				</section>
+			</section>
+
+			<section>
+				<section>
+					<h2>Serverless Framework</h2>
+					<img width="550" height="300" data-src="images/sls.gif" alt="shift-left">
+				</section>
+				<section>
+					<blockquote cite="https://serverless.com/framework/docs/">
+						&ldquo;The Serverless Framework helps you build serverless apps with radically less overhead and
+						cost. It provides a powerful, unified experience to develop, deploy, <b
+							style="color:red;">test</b>, secure and monitor your serverless applications.&rdquo;
+					</blockquote>
+					~ serverless
+				</section>
+				<section>
+					<h2>Is this just a hype?</h2>
+					<p>Companies move towards such solutions mainly because:</p>
+					<p class="fragment"> It is <b style="color:red;">free</b> and open-source</p>
+					<p class="fragment"> Supports <b style="color:red;">8 cloud providers</b> including AWS, GCP, and
+						Azure </p>
+					<p class="fragment"> Focus on business and System <b style="color:red;"> security</b></p>
+				</section>
+			</section>
+
+			<section>
+				<h2>Something to consider</h2>
+				<ul>
+					<li>Higher <b style="color:red;">latency</b></li>
+					<li>Vendor <b style="color:red;">dependency</b></li>
+					<li>Debugging <b style="color:red;">difficulties</b></li>
+					<li><b style="color:red;">Steep</b> learning curve</li>
+				</ul>
+			</section>
+
+			<section>
+				<section>
+					<h2>AWS Batch Selenium Tests</h2>
+					<img width="350" height="200" data-src="images/awsbatch.jpg" alt="batch">
+				</section>
+				<section>
+					<h3>The Tech Stack</h3>
+					<img width="350" height="200" data-src="images/python.jpeg" alt="batch">
+					<p class="fragment"> Python 2.7
+						<ul class="fragment">
+							<li>Behave (BDD) framework</li>
+							<li>Selenium 3</li>
+							<li>Docker</li>
+						</ul>
+					</p>
+				</section>
+				<section>
+					<h3>The Tech Stack (2)</h3>
+					<img width="350" height="200" data-src="images/aws.png" alt="batch">
+					<p>
+						<ul class="fragment">
+							<li>Batch</li>
+							<li>IAM roles</li>
+							<li>S3 bucket for artifacts</li>
+							<li>CloudWatch rules as triggers</li>
+						</ul>
+					</p>
+				</section>
+				<section>
+					<h3>The Tech Stack (3)</h3>
+					<img width="150" height="150" data-src="images/github.png" alt="batch">
+					<img width="150" height="150" data-src="images/terraform.png" alt="batch">
+					<img width="150" height="150" data-src="images/slack.png" alt="batch">
+					<p>
+						<ul class="fragment">
+							<li>Github</li>
+							<li>Terraform or Serverless AWS Batch plugin</li>
+							<li>Slack</li>
+						</ul>
+					</p>
+				</section>
+				<section>
+					<h2>The Basics</h2>
+					<blockquote cite="https://aws.amazon.com/batch/">
+						&ldquo; ...easily and efficiently run hundreds of thousands of <b style="color:red;">batch
+							computing jobs</b> on AWS ... <b style="color:red;">dynamically provisions</b> the optimal
+						quantity and type of compute resources (e.g., CPU or memory optimized instances) based on the
+						volume and <b style="color:red;">specific resource requirements</b> of the batch jobs
+						submitted.&rdquo;
+					</blockquote>
+					~ AWS, Inc.
+				</section>
+				<section>
+					<blockquote cite="https://aws.amazon.com/batch/">
+						&ldquo; With AWS Batch, there is <b style="color:red;">no need to install and manage</b> batch
+						computing software or server clusters that you use to run your jobs, allowing you to <b
+							style="color:red;">focus on analyzing results and solving problems</b>. AWS Batch plans,
+						schedules, and executes your <b style="color:red;">batch computing workloads</b> across the full
+						range of AWS compute services and features, such as Amazon EC2 and Spot Instances.&rdquo;
+					</blockquote>
+					~ AWS, Inc.
+				</section>
+				<section>
+					<h2>AWS Batch Components</h2>
+					<ul>
+						<li>Jobs</li>
+						<li>Job definition</li>
+						<li>Job queues</li>
+						<li>Job schedular (SLS rate)</li>
+						<li>Compute environments</li>
+					</ul>
+				</section>
+				<section>
+					<h2>Terraform</h2>
+					<img src="images/terraform.png" alt="terraform-logo" />
+					<ul>
+						<li><b style="color:red;">I</b>nfrastructure <b style="color:red;">a</b>s <b
+								style="color:red;">C</b>ode to provision and manage any cloud, infrastructure, or
+							service</li>
+						<li>Why use declarative configuration files
+							<ul>
+								<li>Collaborate and share configurations</li>
+								<li>Evolve and version your infrastructure (AWS resources)</li>
+								<li>Automate provisioning (plan & build)</li>
+							</ul>
+						</li>
+					</ul>
+				</section>
+				<section>
+					<h2>Serverless Batch</h2>
+					<img src="images/sls.gif" alt="terraform-logo" width="200px" height="100px" />
+					<ul>
+						<li>A Serverless v1.x <b style="color:red;">plugin</b> that makes creating and running AWS Batch tasks as easy as creating a Serverless Lambda Function</li>
+						<li>Works with
+							<ul>
+								<li>Serverless >= v1.43</li>
+								<li>Python 3.7</li>
+								<li>Node.JS 10</li>
+							</ul>
+						</li>
+					</ul>
+				</section>
+				<section>
+					<h2>Docker</h2>
+					<img src="images/docker.png" alt="terraform-logo" width="100px" height="100px" />
+					<ul>
+						<li>Platform as a service (PaaS) product that uses OS-level virtualization to deliver software
+							in containers.</li>
+						<li>Define your test environment in a Dockerfile, build and publish the image.</li>
+						<li>Two ways of get your code and infrastructure together
+							<ul>
+								<li>Bake the test code inside the container. You must use private container registry.
+								</li>
+								<li>Keep your Dockerfile clean and pull code at runtime. You can use AWS S3 bucket to
+									store your ssh keys.</li>
+							</ul>
+						</li>
+					</ul>
+				</section>
+				<section data-transition="none">
+					<h2>Orchestration Overview</h2>
+					<img src="images/aws-se-pipeline8.jpg" width="500px" height="500px" />
+				</section>
+				<section data-transition="none">
+					<h2>Orchestration Overview</h2>
+					<img src="images/aws-se-pipeline7.jpg" width="500px" height="500px" />
+				</section>
+				<section data-transition="none">
+					<h2>Orchestration Overview</h2>
+					<img src="images/aws-se-pipeline6.jpg" width="500px" height="500px" />
+				</section>
+				<section data-transition="none">
+					<h2>Orchestration Overview</h2>
+					<img src="images/aws-se-pipeline5.jpg" width="500px" height="500px" />
+				</section>
+				<section data-transition="none">
+					<h2>Orchestration Overview</h2>
+					<img src="images/aws-se-pipeline4.jpg" width="500px" height="500px" />
+				</section>
+				<section data-transition="none">
+					<h2>Orchestration Overview</h2>
+					<img src="images/aws-se-pipeline3.jpg" width="500px" height="500px" />
+				</section>
+				<section data-transition="none">
+					<h2>Orchestration Overview</h2>
+					<img src="images/aws-se-pipeline2.jpg" width="500px" height="500px" />
+				</section>
+				<section data-transition="none">
+					<h2>Orchestration Overview</h2>
+					<img src="images/aws-se-pipeline1.png" width="500px" height="500px" />
+				</section>
+			</section>
+
+			<section>
+				<section>
+					<h2>AWS Lambda Selenium Monitoring</h2>
+					<img width="350" height="200" data-src="images/awslambda.png" alt="lambda">
+				</section>
+				<section>
+					<h3>The Tech Stack</h3>
+					<img width="150" height="100" data-src="images/python.jpeg" alt="batch">
+					<img width="150" height="100" data-src="images/aws.png" alt="batch">
+					<img width="150" height="100" data-src="images/sls.gif" alt="batch">
+					<p class="fragment"> Python 3.7
+						<ul class="fragment">
+							<li>Selenium</li>
+						</ul>
+					</p>
+					<p class="fragment"> AWS
+						<ul class="fragment">
+							<li>Lambda with Layers (Chromedriver and Headless Chromium)</li>
+							<li>IAM role and SSM Parameter store</li>
+							<li>S3 artifacts bucket and Cloudwatch logs</li>
+						</ul>
+					</p>
+				</section>
+				<section>
+						<blockquote cite="https://aws.amazon.com/batch/">
+							&ldquo; AWS Lambda lets you run <b style="color:red;">code without provisioning or managing servers</b> ... all with zero administration. <b style="color:red;">Just upload</b> your code and Lambda takes care of everything required to run and scale your code with high availability.&rdquo;
+						</blockquote>
+						~ AWS, Inc.
+				</section>
+			</section>
+
+			<section>
+				<h2>Solution complexity</h2>
+				<img width="450" height="300" data-src="images/notice.gif">
+				<p class="fragment"> Goes <b style="color:red;">down</b>!</p>
+			</section>
+
+			<section>
+				<h2>THANK YOU!</h2>
+				<img width="450" height="300" data-src="images/qa.gif">
+				<p>Contact me at:</p>
+				<img width="50" height="50" data-src="images/github.png" style="margin-bottom: -10px !important;"> /ekostadinov
+				<img width="50" height="50" data-src="images/gmail.jpg" style="margin-bottom: -10px !important;"> evgenikostadinov
+				<img width="50" height="50" data-src="images/in.png" style="margin-bottom: -10px !important;"> /in/ekostadinov
+			</section>
+		</div>
+	</div>
+
+	<script src="lib/js/head.min.js"></script>
+	<script src="js/reveal.js"></script>
+
+	<script>
+
+		// More info https://github.com/hakimel/reveal.js#configuration
+		Reveal.initialize({
+			controls: true,
+			progress: true,
+			history: true,
+			center: true,
+
+			transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+			// More info https://github.com/hakimel/reveal.js#dependencies
+			dependencies: [
+				{ src: 'lib/js/classList.js', condition: function () { return !document.body.classList; } },
+				{ src: 'plugin/markdown/marked.js', condition: function () { return !!document.querySelector('[data-markdown]'); } },
+				{ src: 'plugin/markdown/markdown.js', condition: function () { return !!document.querySelector('[data-markdown]'); } },
+				{ src: 'plugin/highlight/highlight.js', async: true, callback: function () { hljs.initHighlightingOnLoad(); } },
+				{ src: 'plugin/zoom-js/zoom.js', async: true },
+				{ src: 'plugin/notes/notes.js', async: true }
+			]
+		});
+
+	</script>
+
+</body>
+
+</html>
